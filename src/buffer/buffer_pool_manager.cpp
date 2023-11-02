@@ -193,10 +193,14 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
     return false;
   }
 
+  if (page->is_dirty_) {
+    FlushPage(page_id);
+  }
+
   frame_id_t frame_id = page_table_[page_id];
 
   page->ResetMemory();
-  page_table_.erase(frame_id);
+  page_table_.erase(page->GetPageId());
   replacer_->Remove(frame_id);
   free_list_.push_back(frame_id);
   DeallocatePage(page_id);
