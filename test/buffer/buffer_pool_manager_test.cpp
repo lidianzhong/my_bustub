@@ -23,7 +23,7 @@ namespace bustub {
 
 // NOLINTNEXTLINE
 // Check whether pages containing terminal characters can be recovered
-TEST(BufferPoolManagerTest, DISABLED_BinaryDataTest) {
+TEST(BufferPoolManagerTest, BinaryDataTest) {
   const std::string db_name = "test.db";
   const size_t buffer_pool_size = 10;
   const size_t k = 5;
@@ -33,6 +33,7 @@ TEST(BufferPoolManagerTest, DISABLED_BinaryDataTest) {
 
   constexpr int lower_bound = static_cast<int>(std::numeric_limits<char>::min());
   constexpr int upper_bound = static_cast<int>(std::numeric_limits<char>::max());
+  // 无论 char 默认是有符号还是无符号，都必须满足这个约束
   // No matter if `char` is signed or unsigned by default, this constraint must be met
   static_assert(upper_bound - lower_bound == 255);
   std::uniform_int_distribution<int> uniform_dist(lower_bound, upper_bound);
@@ -97,7 +98,7 @@ TEST(BufferPoolManagerTest, DISABLED_BinaryDataTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(BufferPoolManagerTest, DISABLED_SampleTest) {
+TEST(BufferPoolManagerTest, SampleTest) {
   const std::string db_name = "test.db";
   const size_t buffer_pool_size = 10;
   const size_t k = 5;

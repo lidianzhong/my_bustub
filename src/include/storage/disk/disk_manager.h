@@ -23,12 +23,16 @@
 namespace bustub {
 
 /**
+ * DiskManager 关注 page 的分配和释放。它执行从磁盘的读取和写入操作。它在上下文中提供文件层。
+ *
  * DiskManager takes care of the allocation and deallocation of pages within a database. It performs the reading and
  * writing of pages to and from disk, providing a logical file layer within the context of a database management system.
  */
 class DiskManager {
  public:
   /**
+   * 创建一个 DiskManager，写入指定的文件名。传入的参数即是要写入的文件名
+   *
    * Creates a new disk manager that writes to the specified database file.
    * @param db_file the file name of the database file to write to
    */
@@ -40,11 +44,13 @@ class DiskManager {
   virtual ~DiskManager() = default;
 
   /**
+   * 关闭 disk manager，关闭所有文件资源。
    * Shut down the disk manager and close all the file resources.
    */
   void ShutDown();
 
   /**
+   * 向数据库文件写入 page
    * Write a page to the database file.
    * @param page_id id of the page
    * @param page_data raw page data
@@ -52,6 +58,7 @@ class DiskManager {
   virtual void WritePage(page_id_t page_id, const char *page_data);
 
   /**
+   * 从数据库文件中读取 page
    * Read a page from the database file.
    * @param page_id id of the page
    * @param[out] page_data output buffer
@@ -59,6 +66,7 @@ class DiskManager {
   virtual void ReadPage(page_id_t page_id, char *page_data);
 
   /**
+   * 将整个日志缓冲区写入磁盘
    * Flush the entire log buffer into disk.
    * @param log_data raw log data
    * @param size size of log entry
@@ -66,6 +74,8 @@ class DiskManager {
   void WriteLog(char *log_data, int size);
 
   /**
+   * 从日志文件中读入一条日志牡蛎
+   * 如果读取成功，将返回 true，否则返回 false
    * Read a log entry from the log file.
    * @param[out] log_data output buffer
    * @param size size of the log entry
