@@ -21,6 +21,10 @@ class BasicPageGuard {
    *
    * @brief Move constructor for BasicPageGuard
    *
+   * 用一个存在的 BasicPageGuard 创建一个一样的 BasicPageGuard
+   * 1. 新的 BasicPageGuard 应该与 旧的 BasicPageGuard 具有完全相同的状态
+   * 2. 旧的 BasicPageGuard 不应该再被调用
+   *
    * When you call BasicPageGuard(std::move(other_guard)), you
    * expect that the new guard will behave exactly like the other
    * one. In addition, the old page guard should not be usable. For

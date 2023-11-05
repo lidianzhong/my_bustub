@@ -158,6 +158,7 @@ auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty, [[maybe_unus
 auto BufferPoolManager::FlushPage(page_id_t page_id) -> bool {
   BUSTUB_ASSERT(page_id != INVALID_PAGE_ID, "Flush Page is not allow INVALID_PAGE_ID page");
 
+  std::unique_lock<std::mutex> lock(this->latch_);
   if (page_table_.find(page_id) == page_table_.end()) {
     return false;
   }
@@ -180,7 +181,11 @@ auto BufferPoolManager::FlushPage(page_id_t page_id) -> bool {
   return true;
 }
 
-void BufferPoolManager::FlushAllPages() {}
+void BufferPoolManager::FlushAllPages() {
+  for (auto p : page_table_) {
+    FlushPage(p.first);
+  }
+}
 
 auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
   std::unique_lock<std::mutex> lock(latch_);
