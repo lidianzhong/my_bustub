@@ -69,6 +69,10 @@ class ExtendibleHTableBucketPage {
   auto Lookup(const KeyType &key, ValueType &value, const KeyComparator &cmp) const -> bool;
 
   /**
+   * 尝试在 bucket 中插入一个 key 和 value
+   *
+   * 如果插入成功返回 true，如何 bucket 满了，或者已经存在相同的 key 时，返回 false
+   *
    * Attempts to insert a key and value in the bucket.
    *
    * @param key key to insert
@@ -79,6 +83,10 @@ class ExtendibleHTableBucketPage {
   auto Insert(const KeyType &key, const ValueType &value, const KeyComparator &cmp) -> bool;
 
   /**
+   * 移除 key 和 value
+   *
+   * 如果移除成功返回 true，如果没有找到 key 返回 false
+   *
    * Removes a key and value.
    *
    * @return true if removed, false if not found

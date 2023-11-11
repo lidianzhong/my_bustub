@@ -29,7 +29,7 @@
 namespace bustub {
 
 // NOLINTNEXTLINE
-TEST(ExtendibleHTableTest, DISABLED_BucketPageSampleTest) {
+TEST(ExtendibleHTableTest, BucketPageSampleTest) {
   auto disk_mgr = std::make_unique<DiskManagerUnlimitedMemory>();
   auto bpm = std::make_unique<BufferPoolManager>(5, disk_mgr.get());
 
@@ -37,6 +37,7 @@ TEST(ExtendibleHTableTest, DISABLED_BucketPageSampleTest) {
   {
     BasicPageGuard guard = bpm->NewPageGuarded(&bucket_page_id);
     auto bucket_page = guard.AsMut<ExtendibleHTableBucketPage<GenericKey<8>, RID, GenericComparator<8>>>();
+    // 初始化桶大小为 10，即桶最多能放 10 个数
     bucket_page->Init(10);
 
     auto key_schema = ParseCreateStatement("a bigint");
@@ -44,6 +45,7 @@ TEST(ExtendibleHTableTest, DISABLED_BucketPageSampleTest) {
     GenericKey<8> index_key;
     RID rid;
 
+    // 插入 10 个 key-value 对
     // insert a few (key, value) pairs
     for (int64_t i = 0; i < 10; i++) {
       index_key.SetFromInteger(i);
@@ -51,11 +53,13 @@ TEST(ExtendibleHTableTest, DISABLED_BucketPageSampleTest) {
       ASSERT_TRUE(bucket_page->Insert(index_key, rid, comparator));
     }
 
+    // 这时候 bucket 已经满了，所以插入 11 失败
     index_key.SetFromInteger(11);
     rid.Set(11, 11);
     ASSERT_TRUE(bucket_page->IsFull());
     ASSERT_FALSE(bucket_page->Insert(index_key, rid, comparator));
 
+    // 检查插入的十个 key-value 是否都正确
     // check for the inserted pairs
     for (unsigned i = 0; i < 10; i++) {
       index_key.SetFromInteger(i);
@@ -63,6 +67,7 @@ TEST(ExtendibleHTableTest, DISABLED_BucketPageSampleTest) {
       ASSERT_EQ(rid, RID(i, i));
     }
 
+    // 移除一些 key-value 对
     // remove a few pairs
     for (unsigned i = 0; i < 10; i++) {
       if (i % 2 == 1) {
@@ -87,7 +92,7 @@ TEST(ExtendibleHTableTest, DISABLED_BucketPageSampleTest) {
 }
 
 // NOLINTNEXTLINE
-TEST(ExtendibleHTableTest, DISABLED_HeaderDirectoryPageSampleTest) {
+TEST(ExtendibleHTableTest, HeaderDirectoryPageSampleTest) {
   auto disk_mgr = std::make_unique<DiskManagerUnlimitedMemory>();
   auto bpm = std::make_unique<BufferPoolManager>(5, disk_mgr.get());
 
@@ -100,7 +105,9 @@ TEST(ExtendibleHTableTest, DISABLED_HeaderDirectoryPageSampleTest) {
   {
     /************************ HEADER PAGE TEST ************************/
     BasicPageGuard header_guard = bpm->NewPageGuarded(&header_page_id);
+    // 创建了 header_page 页
     auto header_page = header_guard.AsMut<ExtendibleHTableHeaderPage>();
+    // 初始化 header page 的最大深度为 2
     header_page->Init(2);
 
     /* Test hashes for header page
@@ -110,6 +117,7 @@ TEST(ExtendibleHTableTest, DISABLED_HeaderDirectoryPageSampleTest) {
     11000000000000001000000000000000 - 3221258240
     */
 
+    // 确保能够根据 前两位 将值正确哈希到对应 directory 中
     // ensure we are hashing into proper bucket based on upper 2 bits
     uint32_t hashes[4]{32768, 1073774592, 2147516416, 3221258240};
     for (uint32_t i = 0; i < 4; i++) {
@@ -120,7 +128,9 @@ TEST(ExtendibleHTableTest, DISABLED_HeaderDirectoryPageSampleTest) {
 
     /************************ DIRECTORY PAGE TEST ************************/
     BasicPageGuard directory_guard = bpm->NewPageGuarded(&directory_page_id);
+    // 创建 directory page
     auto directory_page = directory_guard.AsMut<ExtendibleHTableDirectoryPage>();
+    // 设置 directory page 的最大深度为 3
     directory_page->Init(3);
 
     BasicPageGuard bucket_guard_1 = bpm->NewPageGuarded(&bucket_page_id_1);
