@@ -21,7 +21,6 @@
 namespace bustub {
 
 void ExtendibleHTableDirectoryPage::Init(uint32_t max_depth) {
-  BUSTUB_ASSERT(max_depth > 0 && max_depth <= HTABLE_DIRECTORY_MAX_DEPTH, "out of range");
   max_depth_ = max_depth;
 }
 
@@ -39,9 +38,8 @@ void ExtendibleHTableDirectoryPage::SetBucketPageId(uint32_t bucket_idx, page_id
 }
 
 auto ExtendibleHTableDirectoryPage::GetSplitImageIndex(uint32_t bucket_idx) const -> uint32_t {
-  // 获取 bucket index 在 local_depth_ 下的 分裂图下标
-  uint32_t local_depth = local_depths_[bucket_idx];
-  return bucket_idx ^ (1 << local_depth);  // FIXME local_depth or -1 ?
+  // 获取 bucket index 在 global_depth_ 下的 分裂图下标
+  return bucket_idx + (1 << (global_depth_ - 1));
 }
 
 auto ExtendibleHTableDirectoryPage::GetGlobalDepth() const -> uint32_t { return global_depth_; }
@@ -108,7 +106,7 @@ auto ExtendibleHTableDirectoryPage::GetLocalDepthMask(uint32_t bucket_idx) const
 }
 auto ExtendibleHTableDirectoryPage::GetMaxDepth() const -> uint32_t { return max_depth_; }
 auto ExtendibleHTableDirectoryPage::MaxSize() const -> uint32_t {
-  return max_depth_;
+  return 1 << max_depth_;
 }
 
 }  // namespace bustub

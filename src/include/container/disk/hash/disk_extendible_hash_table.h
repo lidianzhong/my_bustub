@@ -30,6 +30,10 @@
 namespace bustub {
 
 /**
+ * 由 buffer pool manager 支持的 extendible hash table 实现。
+ * 支持 Non-unique, insert, delete.
+ * 当 bucket 变满或者变空时，表会动态增长/缩小
+ *
  * Implementation of extendible hash table that is backed by a buffer pool
  * manager. Non-unique keys are supported. Supports insert and delete. The
  * table grows/shrinks dynamically as buckets become full/empty.
@@ -38,6 +42,8 @@ template <typename K, typename V, typename KC>
 class DiskExtendibleHashTable {
  public:
   /**
+   * 创建一个新的 DiskExtendibleHashTable
+   *
    * @brief Creates a new DiskExtendibleHashTable.
    *
    * @param name
@@ -54,6 +60,8 @@ class DiskExtendibleHashTable {
                                    uint32_t bucket_max_size = HTableBucketArraySize(sizeof(std::pair<K, V>)));
 
   /** TODO(P2): Add implementation
+   * 往 hash table 中插入 key-value 对
+   *
    * Inserts a key-value pair into the hash table.
    *
    * @param key the key to create
@@ -64,6 +72,8 @@ class DiskExtendibleHashTable {
   auto Insert(const K &key, const V &value, Transaction *transaction = nullptr) -> bool;
 
   /** TODO(P2): Add implementation
+   * 从 hash table 中移除 key-value 对
+   *
    * Removes a key-value pair from the hash table.
    *
    * @param key the key to delete
@@ -74,6 +84,8 @@ class DiskExtendibleHashTable {
   auto Remove(const K &key, Transaction *transaction = nullptr) -> bool;
 
   /** TODO(P2): Add implementation
+   * 获取给定 key 的 value 值
+   *
    * Get the value associated with a given key in the hash table.
    *
    * Note(fall2023): This semester you will only need to support unique key-value pairs.
@@ -86,22 +98,30 @@ class DiskExtendibleHashTable {
   auto GetValue(const K &key, std::vector<V> *result, Transaction *transaction = nullptr) const -> bool;
 
   /**
+   * 验证 extendible hash table directory 完整性的辅助函数
+   *
    * Helper function to verify the integrity of the extendible hash table's directory.
    */
   void VerifyIntegrity() const;
 
   /**
+   * 用于公开 header page id 的辅助函数
+   *
    * Helper function to expose the header page id.
    */
   auto GetHeaderPageId() const -> page_id_t;
 
   /**
+   * 打印哈希表的辅助函数
+   *
    * Helper function to print out the HashTable.
    */
   void PrintHT() const;
 
  private:
   /**
+   * 将 MurmurHash 的 64 为哈希转换为 32 位的辅助函数
+   *
    * Hash - simple helper to downcast MurmurHash's 64-bit hash to 32-bit
    * for extendible hashing.
    *

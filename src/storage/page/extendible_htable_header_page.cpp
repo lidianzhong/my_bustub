@@ -18,13 +18,12 @@ namespace bustub {
 
 void ExtendibleHTableHeaderPage::Init(uint32_t max_depth) {
   // throw NotImplementedException("ExtendibleHTableHeaderPage is not implemented");
-  BUSTUB_ASSERT(max_depth > 0 && max_depth <= HTABLE_HEADER_MAX_DEPTH, "out of range");
   this->max_depth_ = max_depth;
 }
 
 auto ExtendibleHTableHeaderPage::HashToDirectoryIndex(uint32_t hash) const -> uint32_t {
   // 取哈希值的前 max_depth_ 位
-  return hash >> (sizeof(uint32_t) * 8 - max_depth_);
+  return max_depth_ > 0 ? hash >> (sizeof(uint32_t) * 8 - max_depth_) : 0;
 }
 
 auto ExtendibleHTableHeaderPage::GetDirectoryPageId(uint32_t directory_idx) const -> uint32_t {
