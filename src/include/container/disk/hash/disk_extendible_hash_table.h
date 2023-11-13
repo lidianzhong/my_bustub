@@ -136,9 +136,15 @@ class DiskExtendibleHashTable {
   auto InsertToNewBucket(ExtendibleHTableDirectoryPage *directory, uint32_t bucket_idx, const K &key, const V &value)
       -> bool;
 
+  /**
+   * 更新 bucket_page_ids[]
+   */
   void UpdateDirectoryMapping(ExtendibleHTableDirectoryPage *directory, uint32_t new_bucket_idx,
                               page_id_t new_bucket_page_id, uint32_t new_local_depth, uint32_t local_depth_mask);
 
+  /**
+   *  将 old bucket 和 new bucket 进行重排的过程
+   */
   void MigrateEntries(ExtendibleHTableBucketPage<K, V, KC> *old_bucket,
                       ExtendibleHTableBucketPage<K, V, KC> *new_bucket, uint32_t new_bucket_idx,
                       uint32_t local_depth_mask);

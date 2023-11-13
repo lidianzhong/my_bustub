@@ -21,6 +21,7 @@ namespace bustub {
 template <typename K, typename V, typename KC>
 void ExtendibleHTableBucketPage<K, V, KC>::Init(uint32_t max_size) {
   // 初始化 bucket page
+  size_ = 0;
   max_size_ = max_size;
 }
 

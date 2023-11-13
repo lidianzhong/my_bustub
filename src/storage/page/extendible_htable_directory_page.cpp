@@ -22,6 +22,9 @@ namespace bustub {
 
 void ExtendibleHTableDirectoryPage::Init(uint32_t max_depth) {
   max_depth_ = max_depth;
+
+  // 初始化当前 directory 的 global_depth_ = 0
+  global_depth_ = 0;
 }
 
 auto ExtendibleHTableDirectoryPage::HashToBucketIndex(uint32_t hash) const -> uint32_t {
@@ -39,7 +42,8 @@ void ExtendibleHTableDirectoryPage::SetBucketPageId(uint32_t bucket_idx, page_id
 
 auto ExtendibleHTableDirectoryPage::GetSplitImageIndex(uint32_t bucket_idx) const -> uint32_t {
   // 获取 bucket index 在 global_depth_ 下的 分裂图下标
-  return bucket_idx + (1 << (global_depth_ - 1));
+  uint32_t local_depth = local_depths_[bucket_idx];
+  return bucket_idx ^ (1 << local_depth);
 }
 
 auto ExtendibleHTableDirectoryPage::GetGlobalDepth() const -> uint32_t { return global_depth_; }
@@ -67,13 +71,9 @@ void ExtendibleHTableDirectoryPage::DecrGlobalDepth() {
 
 auto ExtendibleHTableDirectoryPage::CanShrink() -> bool {
   // 收缩的条件: 桶中的所有 local_depth_ 严格小于 global_depth_ 时
-  for (uint32_t depth: local_depths_) {
-    if (depth >= global_depth_) {
-      return false;
-    }
-  }
-
-  return true;
+  return std::all_of(local_depths_, local_depths_ + Size(), [this](uint32_t depth) {
+    return depth < global_depth_;
+  });
 }
 
 auto ExtendibleHTableDirectoryPage::Size() const -> uint32_t {
@@ -101,8 +101,8 @@ auto ExtendibleHTableDirectoryPage::GetGlobalDepthMask() const -> uint32_t { ret
 
 auto ExtendibleHTableDirectoryPage::GetLocalDepthMask(uint32_t bucket_idx) const -> uint32_t {
   // 获取 local_depth 的掩码
-  uint32_t local_depth_mask = bucket_page_ids_[bucket_idx];
-  return (1 << local_depth_mask) - 1;
+  uint32_t local_depth = bucket_page_ids_[bucket_idx];
+  return (1 << local_depth) - 1;
 }
 auto ExtendibleHTableDirectoryPage::GetMaxDepth() const -> uint32_t { return max_depth_; }
 auto ExtendibleHTableDirectoryPage::MaxSize() const -> uint32_t {
