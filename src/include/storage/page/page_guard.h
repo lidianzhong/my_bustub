@@ -35,6 +35,10 @@ class BasicPageGuard {
 
   /** TODO(P2): Add implementation
    *
+   * 它的作用是 使守护的页面 Drop 掉
+   *
+   * 由于可能 守护的 page 已经被 Drop 掉, 所以把 page 为空的逻辑改为 直接 return 而不是断言报错
+   *
    * @brief Drop a page guard
    *
    * Dropping a page guard should clear all contents
@@ -57,6 +61,8 @@ class BasicPageGuard {
   auto operator=(BasicPageGuard &&that) noexcept -> BasicPageGuard &;
 
   /** TODO(P1): Add implementation
+   *
+   * 它的作用是 如果守护的页面没有调用 Drop, 那么在析构时要 Drop 掉
    *
    * @brief Destructor for BasicPageGuard
    *

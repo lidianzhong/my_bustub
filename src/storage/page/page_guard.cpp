@@ -15,8 +15,9 @@ BasicPageGuard::BasicPageGuard(BasicPageGuard &&that) noexcept {
 }
 
 void BasicPageGuard::Drop() {
-  BUSTUB_ASSERT(this->page_ != nullptr, "try to drop an already dropped page guard");
-  BUSTUB_ASSERT(this->page_->GetPinCount() > 0, "try to drop the page whose pin count is already 0");
+  if (this->page_ == nullptr || this->page_->GetPinCount() <= 0) {
+    return;
+  }
 
  // pin_count --
   this->bpm_->UnpinPage(this->PageId(), this->is_dirty_);
@@ -27,8 +28,9 @@ void BasicPageGuard::Drop() {
 }
 
 auto BasicPageGuard::operator=(BasicPageGuard &&that) noexcept -> BasicPageGuard & {
-  // 如果当前对象还守护着页面，需要将当前页面保护关掉
-  if (this->page_->GetPinCount() != 0) {
+  // 如果 this 对象已经被 Unpinned 掉了，那么 this 对之前的 page 直接释放保护
+  // 如果 this 对象还没被 Unpinned 掉，那么就先 Unpinned 掉之前 page
+  if (this->bpm_ != nullptr && this->page_ != nullptr) {
     this->bpm_->UnpinPage(this->PageId(), this->is_dirty_);
   }
 

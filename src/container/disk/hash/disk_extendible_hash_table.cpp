@@ -80,6 +80,7 @@ auto DiskExtendibleHashTable<K, V, KC>::GetValue(const K &key, std::vector<V> *r
 
   // 3. 从 directory page 中拿到 bucket page
   uint32_t bucket_index = directory_page->HashToBucketIndex(hash_key);
+  bucket_index = bucket_index & directory_page->GetLocalDepthMask(bucket_index);
   WritePageGuard bucket_page_guard = bpm_->FetchPageWrite(directory_page->GetBucketPageId(bucket_index));
   auto bucket_page = bucket_page_guard.AsMut<ExtendibleHTableBucketPage<K, V, KC>>();
 
@@ -130,9 +131,12 @@ auto DiskExtendibleHashTable<K, V, KC>::Insert(const K &key, const V &value, Tra
     page_id_t new_bucket_page_id = INVALID_PAGE_ID;
     WritePageGuard new_bucket_page_guard = bpm_->NewPageGuarded(&new_bucket_page_id).UpgradeWrite();
     auto *new_bucket_page = new_bucket_page_guard.AsMut<ExtendibleHTableBucketPage<K, V, KC>>();
+
+    // 初始化 new bucket page
     new_bucket_page->Init(bucket_max_size_);
+
+    // 获取 分裂图 索引
     uint32_t new_bucket_index = directory_page->GetSplitImageIndex(bucket_index);
-    uint32_t new_local_depth_mask = directory_page->GetLocalDepthMask(bucket_index);
 
     // 1. 处理溢出
     // 1. (1) 如果 global depth == local depth
@@ -152,7 +156,8 @@ auto DiskExtendibleHashTable<K, V, KC>::Insert(const K &key, const V &value, Tra
 
       // (4) 更新 directory
       uint32_t new_local_depth = directory_page->GetLocalDepth(bucket_index);
-      this->UpdateDirectoryMapping(directory_page, new_bucket_index, new_bucket_page_id, new_local_depth, new_local_depth_mask);
+      uint32_t new_local_depth_mask = directory_page->GetLocalDepthMask(bucket_index);
+      UpdateDirectoryMapping(directory_page, new_bucket_index, new_bucket_page_id, new_local_depth, new_local_depth_mask);
 
     }
     // 1. (2) 如果 global depth < local depth
@@ -165,11 +170,13 @@ auto DiskExtendibleHashTable<K, V, KC>::Insert(const K &key, const V &value, Tra
 
       // (3) 更新 directory
       uint32_t new_local_depth = directory_page->GetLocalDepth(bucket_index);
+      uint32_t new_local_depth_mask = directory_page->GetLocalDepthMask(bucket_index);
       UpdateDirectoryMapping(directory_page, new_bucket_index, new_bucket_page_id, new_local_depth, new_local_depth_mask);
 
     }
 
     // 重新散列
+    uint32_t new_local_depth_mask = directory_page->GetLocalDepthMask(bucket_index);
     MigrateEntries(bucket_page, new_bucket_page, new_bucket_index, new_local_depth_mask);
 
     // 将新的值插入 bucket 中
@@ -245,6 +252,7 @@ template <typename K, typename V, typename KC>
 void DiskExtendibleHashTable<K, V, KC>::UpdateDirectoryMapping(ExtendibleHTableDirectoryPage *directory,
                                                                uint32_t new_bucket_idx, page_id_t new_bucket_page_id,
                                                                uint32_t new_local_depth, uint32_t local_depth_mask) {
+  new_bucket_idx = new_bucket_idx & local_depth_mask;
   directory->SetBucketPageId(new_bucket_idx, new_bucket_page_id);
   directory->SetLocalDepth(new_bucket_idx, new_local_depth);
 }
@@ -304,6 +312,7 @@ auto DiskExtendibleHashTable<K, V, KC>::Remove(const K &key, Transaction *transa
 
   // 3. 从 directory page 中拿到 bucket page
   uint32_t bucket_index = directory_page->HashToBucketIndex(hash_key);
+  bucket_index = bucket_index & directory_page->GetLocalDepthMask(bucket_index);
   WritePageGuard bucket_page_guard = bpm_->FetchPageWrite(directory_page->GetBucketPageId(bucket_index));
   auto bucket_page = bucket_page_guard.AsMut<ExtendibleHTableBucketPage<K, V, KC>>();
 

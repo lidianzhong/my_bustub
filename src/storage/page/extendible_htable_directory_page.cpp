@@ -42,8 +42,11 @@ void ExtendibleHTableDirectoryPage::SetBucketPageId(uint32_t bucket_idx, page_id
 
 auto ExtendibleHTableDirectoryPage::GetSplitImageIndex(uint32_t bucket_idx) const -> uint32_t {
   // 获取 bucket index 在 global_depth_ 下的 分裂图下标
-  uint32_t local_depth = local_depths_[bucket_idx];
-  return bucket_idx ^ (1 << local_depth);
+  if (GetGlobalDepth() == GetLocalDepth(bucket_idx)) {
+    return bucket_idx ^ (1 << global_depth_);
+  }
+
+  return bucket_idx ^ (1 << local_depths_[bucket_idx]);
 }
 
 auto ExtendibleHTableDirectoryPage::GetGlobalDepth() const -> uint32_t { return global_depth_; }
